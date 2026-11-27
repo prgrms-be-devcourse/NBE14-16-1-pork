@@ -61,6 +61,23 @@ com.gridsandcircles
     └── dto/
 ```
 
+## 📨 API 응답 형식
+
+모든 API는 `ApiResponse`로 감싸서 응답합니다. `message`와 `content`는 값이 없으면 `null`로 내려갑니다.
+
+```json
+// 성공
+{ "code": 200, "message": null, "content": { ... } }
+
+// 실패
+{ "code": 40401, "message": "상품을 찾을 수 없습니다.", "content": null }
+```
+
+- 성공: `code`는 항상 `200`이고, HTTP 상태는 조회·수정 200 / 생성 201입니다.
+- 실패: `code`는 `ErrorCode`의 자체 에러 코드(`{HTTP 상태}{일련번호}`, 예: `40401`)이며, 프런트엔드는 이 값으로 에러를 처리합니다.
+- 에러 코드 목록은 `global/exception/ErrorCode.java`에 있습니다. 비즈니스 예외는 `throw new BusinessException(ErrorCode.PRODUCT_NOT_FOUND)`처럼 던집니다.
+- 스프링 기본 예외(검증 실패, JSON 형식 오류, 없는 URL, 지원하지 않는 메서드 등)는 HTTP 상태를 유지한 채 `40001`로, 처리되지 않은 예외는 `50001`로 응답합니다.
+
 ## 📏 코드 컨벤션
 
 [네이버 Java 코딩 컨벤션](https://naver.github.io/hackday-conventions-java/)을 따릅니다.
@@ -83,8 +100,8 @@ com.gridsandcircles
 | 브랜치 | 용도 |
 | --- | --- |
 | `main` | 배포 브랜치 (직접 push 금지) |
-| `feat/{파트}/{도메인}/{기능}` | 기능 개발. 예: `feat/fe/product/list` |
-| `fix/{파트}/{도메인}/{내용}` | 버그 수정. 예: `fix/be/order/total-price` |
+| `feat/{티켓}-{파트}-{도메인}-{기능}` | 기능 개발. 예: `feat/티켓-fe-product-list` |
+| `fix/{티켓}-{파트}-{도메인}-{기능}` | 버그 수정. 예: `fix/티켓-fe-product-list` |
 
 - 파트: `be`(백엔드), `fe`(프런트엔드)
 - 작업 브랜치는 `main`에서 만들고, PR로 리뷰를 받은 뒤 **squash merge**로 `main`에 병합합니다.
@@ -92,7 +109,7 @@ com.gridsandcircles
 ## 📝 커밋 메시지 (Conventional Commits)
 
 ```
-type: 제목 (50자 이내)
+[Jira 티켓 넘버]type: 제목 (50자 이내)
 
 본문 (무엇을, 왜)
 
@@ -112,6 +129,6 @@ Refs: HUB-TASK-12
 
 ## 🔀 Pull Request
 
-- 제목 형식: `[FEATURE] 로그인 기능 구현`
+- 제목 형식: `[Jira 티켓 넘버] feat: 로그인 기능 구현`
 - 템플릿(`.github/PULL_REQUEST_TEMPLATE.md`)에 맞춰 작성하고, 작업한 내용에 맞는 라벨을 붙입니다.
 - **squash merge**로 병합합니다.

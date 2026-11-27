@@ -4,7 +4,7 @@ import lombok.Getter;
 
 /**
  * 비즈니스 규칙 위반 시 던지는 예외.
- * 예: throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
+ * 예: throw new BusinessException(ErrorCode.PRODUCT_NOT_FOUND);
  */
 @Getter
 public class BusinessException extends RuntimeException {

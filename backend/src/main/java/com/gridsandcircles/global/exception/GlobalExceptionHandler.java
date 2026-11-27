@@ -37,7 +37,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		log.warn("BusinessException: {}", exception.getMessage());
 		ErrorCode errorCode = exception.getErrorCode();
 		return ResponseEntity.status(errorCode.getStatus())
-			.body(ApiResponse.fail(errorCode.getCode(), exception.getMessage()));
+			.body(ApiResponse.fail(errorCode, exception.getMessage()));
 	}
 
 	/**
@@ -49,7 +49,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 			.map(ConstraintViolation::getMessage)
 			.collect(Collectors.joining(", "));
 		return ResponseEntity.badRequest()
-			.body(ApiResponse.fail(ErrorCode.INVALID_INPUT.getCode(), message));
+			.body(ApiResponse.fail(ErrorCode.INVALID_REQUEST, message));
 	}
 
 	@ExceptionHandler(Exception.class)
@@ -57,7 +57,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		log.error("Unhandled exception", exception);
 		ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
 		return ResponseEntity.status(errorCode.getStatus())
-			.body(ApiResponse.fail(errorCode.getCode(), errorCode.getMessage()));
+			.body(ApiResponse.fail(errorCode));
 	}
 
 	/**
@@ -76,7 +76,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		}
 
 		String message = resolveMessage(exception, statusCode, errorCode);
-		ApiResponse<Void> response = ApiResponse.fail(errorCode.getCode(), message);
+		ApiResponse<Void> response = ApiResponse.fail(errorCode, message);
 		return ResponseEntity.status(statusCode).headers(headers).body(response);
 	}
 
