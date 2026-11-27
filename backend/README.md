@@ -67,6 +67,7 @@ com.gridsandcircles
 
 - 들여쓰기는 **탭**, 한 줄은 최대 **120자**
 - `./gradlew build` 실행 시 Checkstyle이 `src/main/java`를 함께 검사합니다 (`./gradlew checkstyleMain`으로 따로 실행 가능)
+- Checkstyle은 Java 21 문법 지원을 위해 10.x(10.26.1)를 사용합니다
 - 규칙 파일은 `rule-config/`에 있습니다 ([naver/hackday-conventions-java](https://github.com/naver/hackday-conventions-java))
 
 ### IntelliJ 설정

@@ -59,7 +59,7 @@ checkstyle {
 	maxWarnings = 0
 	configFile = file("${rootDir}/rule-config/naver-checkstyle-rules.xml")
 	configProperties = ["suppressionFile": "${rootDir}/rule-config/naver-checkstyle-suppressions.xml"]
-	toolVersion = "8.42"
+	toolVersion = "10.26.1" // 8.x는 Java 21 문법(switch 패턴 매칭 등)을 해석하지 못함
 	sourceSets = [sourceSets.main]
 }
 
