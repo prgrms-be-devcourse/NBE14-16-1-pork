@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: grids-and-circles
+
+  datasource:
+    url: jdbc:h2:file:./data/gridsandcircles;MODE=MySQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 100
+        jdbc:
+          time_zone: Asia/Seoul
+
+  jackson:
+    time-zone: Asia/Seoul
+
+server:
+  port: 8080
+
+# React 개발 서버 주소 (CRA: 3000, Vite: 5173). 배포 시 프런트엔드 도메인으로 변경
+cors:
+  allowed-origins: http://localhost:3000,http://localhost:5173
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace

@@ -1,0 +1,10 @@
+# 네이버 컨벤션(Checkstyle newline-lf)에 맞춰 OS와 관계없이 LF로 체크아웃
+* text=auto eol=lf
+
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+*.jar binary
+*.png binary
+*.jpg binary
+*.ico binary
