@@ -4,6 +4,7 @@ name: Jira Sync
 #   브랜치 첫 push (feat/PORK-12-...)  → 이슈를 '진행 중'으로
 #   PR 생성/수정                        → PR 제목 형식 검사 ([PORK-12] type: 요약)
 #   PR 생성                             → 이슈에 PR 링크 댓글
+#   PR 생성/수정                        → PR에 Jira 이슈 카드 댓글 (제목·상태·담당자·우선순위·기한)
 #   main에 머지                         → 이슈를 '완료'로 + 댓글
 #
 # 필요한 설정 (Settings → Secrets and variables → Actions)
@@ -61,9 +62,13 @@ jobs:
           bash .github/scripts/jira.sh transition "$ISSUE_KEY" "$IN_PROGRESS_STATUS"
 
   # PR 제목 형식을 검사하고, PR이 열리면 Jira에 링크를 남긴다
+  # PR에는 Jira 이슈 카드(제목·상태·담당자 등) 댓글을 달고, PR이 수정되면 같은 댓글을 갱신한다
   check-pr:
     if: github.event_name == 'pull_request' && github.event.action != 'closed'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@v7
 
@@ -93,6 +98,31 @@ jobs:
             exit 0
           fi
           bash .github/scripts/jira.sh comment "$ISSUE_KEY" "PR #${PR_NUMBER} 생성:" "$PR_URL"
+
+      - name: PR에 Jira 이슈 카드 댓글
+        if: github.event.action == 'opened' || github.event.action == 'reopened' || github.event.action == 'edited'
+        env:
+          ISSUE_KEY: ${{ steps.key.outputs.key }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if [[ -z "$JIRA_API_TOKEN" ]]; then
+            echo "::warning::Jira 시크릿이 설정되지 않아 이슈 카드를 건너뜁니다."
+            exit 0
+          fi
+          bash .github/scripts/jira.sh issue-card "$ISSUE_KEY" > card.md
+
+          # 이전에 단 카드 댓글이 있으면 갱신하고, 없으면 새로 단다
+          comment_id=$(gh api "repos/${GH_REPO}/issues/${PR_NUMBER}/comments" --paginate \
+            --jq '[.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("<!-- jira-issue-card -->")))][0].id // empty')
+          if [[ -n "$comment_id" ]]; then
+            gh api --method PATCH "repos/${GH_REPO}/issues/comments/${comment_id}" -F body=@card.md > /dev/null
+            echo "이슈 카드 댓글 갱신: ${comment_id}"
+          else
+            gh api --method POST "repos/${GH_REPO}/issues/${PR_NUMBER}/comments" -F body=@card.md > /dev/null
+            echo "이슈 카드 댓글 작성"
+          fi
 
   # main에 머지되면 이슈를 '완료'로 옮긴다
   complete-issue:

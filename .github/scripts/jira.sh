@@ -3,6 +3,7 @@
 # 사용법:
 #   jira.sh transition <이슈 키> <상태 이름>   예) jira.sh transition PORK-12 "진행 중"
 #   jira.sh comment <이슈 키> <문구> [링크]    예) jira.sh comment PORK-12 "PR 생성: #3" https://github.com/...
+#   jira.sh issue-card <이슈 키>               예) jira.sh issue-card PORK-12  (PR 댓글용 마크다운 출력)
 # 필요한 환경변수: JIRA_BASE_URL, JIRA_USER_EMAIL, JIRA_API_TOKEN
 set -euo pipefail
 
@@ -90,13 +91,40 @@ comment() {
 	echo "${key}: 댓글 작성 완료"
 }
 
+# PR 댓글에 붙일 이슈 카드(마크다운)를 출력한다
+issue_card() {
+	local key="$1"
+	local fields="summary,status,issuetype,assignee,priority,duedate"
+
+	jira_api GET "/issue/${key}?fields=${fields}" | jq -r --arg key "$key" --arg base "$BASE_URL" '
+		def cell: tostring | gsub("\\|"; "\\|") | gsub("\n"; " ");
+		.fields as $f
+		| [
+			"<!-- jira-issue-card -->",
+			"### 🎫 Jira [\($key)](\($base)/browse/\($key))",
+			"",
+			"| 항목 | 내용 |",
+			"| --- | --- |",
+			"| 제목 | \($f.summary // "-" | cell) |",
+			"| 유형 | \($f.issuetype.name // "-" | cell) |",
+			"| 상태 | \($f.status.name // "-" | cell) |",
+			"| 담당자 | \($f.assignee.displayName // "미지정" | cell) |",
+			"| 우선순위 | \($f.priority.name // "-" | cell) |",
+			"| 기한 | \($f.duedate // "-" | cell) |",
+			"",
+			"<sub>PR 생성·수정 시점의 Jira 정보입니다. 최신 상태는 링크에서 확인하세요.</sub>"
+		]
+		| join("\n")'
+}
+
 command="${1:-}"
 shift || true
 case "$command" in
 	transition) transition "$@" ;;
 	comment) comment "$@" ;;
+	issue-card) issue_card "$@" ;;
 	*)
-		echo "사용법: $0 {transition|comment} ..." >&2
+		echo "사용법: $0 {transition|comment|issue-card} ..." >&2
 		exit 2
 		;;
 esac
