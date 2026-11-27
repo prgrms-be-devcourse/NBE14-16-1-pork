@@ -1,0 +1,65 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+@import '../styles/tokens.css';
+
+/* dark: 변형은 .dark 클래스가 있을 때만 적용한다 (OS 다크 모드를 따라가지 않게) */
+@custom-variant dark (&:is(.dark *));
+
+/* shadcn/ui 시맨틱 색상을 Tailwind 유틸리티(bg-primary 등)로 노출한다 */
+@theme inline {
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--font-sans: var(--font-family-base);
+	--font-heading: var(--font-family-base);
+	--color-ring: var(--ring);
+	--color-input: var(--input);
+	--color-border: var(--border);
+	--color-destructive: var(--destructive);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-accent: var(--accent);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-muted: var(--muted);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-secondary: var(--secondary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-primary: var(--primary);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-popover: var(--popover);
+	--color-card-foreground: var(--card-foreground);
+	--color-card: var(--card);
+}
+
+/* shadcn/ui 시맨틱 색상을 디자인 토큰에 연결한다 (디자인에 다크 모드가 없어 라이트만 정의) */
+:root {
+	--background: var(--color-bg-canvas);
+	--foreground: var(--color-text-primary);
+	--card: var(--color-bg-surface);
+	--card-foreground: var(--color-text-primary);
+	--popover: var(--color-bg-surface);
+	--popover-foreground: var(--color-text-primary);
+	--primary: var(--color-bg-inverse);
+	--primary-foreground: var(--color-text-inverse);
+	--secondary: var(--color-bg-surface);
+	--secondary-foreground: var(--color-text-primary);
+	--muted: var(--color-bg-muted);
+	--muted-foreground: var(--color-text-secondary);
+	--accent: var(--color-bg-subtle);
+	--accent-foreground: var(--color-text-primary);
+	--destructive: var(--color-text-danger);
+	--border: var(--color-border-default);
+	--input: var(--color-border-default);
+	--ring: var(--color-text-placeholder);
+}
+
+@layer base {
+	* {
+		@apply border-border outline-ring/50;
+	}
+	body {
+		@apply bg-background text-foreground text-body-medium;
+	}
+	html {
+		@apply font-sans;
+	}
+}
