@@ -1,0 +1,130 @@
+/*
+ * 원두 주문 서비스 디자인 토큰
+ * Figma Variables·Text Styles에서 추출한 design-tokens.json(W3C Design Tokens 형식)을 옮긴 것이다.
+ * 변수 이름은 각 토큰의 $extensions.css 값과 같다. 토큰이 바뀌면 이 파일만 고친다.
+ *
+ * @theme에 선언하므로 CSS 변수와 함께 Tailwind 유틸리티도 생긴다.
+ *   색상   --color-bg-canvas      → bg-bg-canvas, text-text-primary, border-border-default
+ *   간격   --spacing-md           → p-md, gap-md, mt-xl
+ *   모서리 --radius-lg            → rounded-lg
+ *   글꼴   --text-heading-h1      → text-heading-h1 (크기·줄 높이·굵기 포함)
+ *   크기   --size-control-md      → h-(--size-control-md), w-(--size-sidebar)
+ * static: 사용하지 않는 토큰도 CSS 변수로 항상 출력한다.
+ */
+@theme static {
+	/* primitive.color */
+	--color-gray-0: #ffffff;
+	--color-gray-50: #fafafa;
+	--color-gray-100: #f4f4f4;
+	--color-gray-200: #e5e5e5;
+	--color-gray-300: #d4d4d4;
+	--color-gray-500: #8a8a8a;
+	--color-gray-600: #5f5f5f;
+	--color-gray-700: #3d3d3d;
+	--color-gray-900: #1f1f1f;
+	--color-red-600: #b3261e;
+
+	/* color.bg */
+	--color-bg-canvas: var(--color-gray-100); /* 페이지 바탕 */
+	--color-bg-surface: var(--color-gray-0); /* 카드·헤더·입력칸 배경 */
+	--color-bg-subtle: var(--color-gray-50); /* 표 헤더 배경 */
+	--color-bg-muted: var(--color-gray-100); /* 안내 박스 배경 */
+	--color-bg-placeholder: var(--color-gray-200); /* 이미지 자리·차트 막대 */
+	--color-bg-inverse: var(--color-gray-900); /* 주요 버튼·관리자 사이드바 */
+	--color-bg-neutral-strong: var(--color-gray-600); /* 2순위 배지 */
+
+	/* color.text */
+	--color-text-primary: var(--color-gray-900); /* 기본 텍스트 */
+	--color-text-subtle: var(--color-gray-700); /* 본문 보조 */
+	--color-text-secondary: var(--color-gray-600); /* 설명·라벨 */
+	--color-text-placeholder: var(--color-gray-500); /* 입력 플레이스홀더 */
+	--color-text-inverse: var(--color-gray-0); /* 어두운 배경 위 텍스트 */
+	--color-text-danger: var(--color-red-600); /* 삭제·취소 버튼 텍스트 */
+
+	/* color.border */
+	--color-border-default: var(--color-gray-300); /* 카드·입력칸 테두리 */
+	--color-border-subtle: var(--color-gray-200); /* 구분선·표 행 */
+	--color-border-strong: var(--color-gray-900); /* 보조 버튼 테두리 */
+	--color-border-disabled: var(--color-gray-500); /* 취소됨 배지 점선 */
+	--color-border-danger: var(--color-red-600); /* 위험 버튼 테두리 */
+
+	/* color.divider */
+	--color-divider: var(--color-gray-200); /* 1px 구분선 */
+
+	/* spacing */
+	--spacing-2xs: 4px;
+	--spacing-xs: 8px;
+	--spacing-sm: 12px;
+	--spacing-md: 16px;
+	--spacing-lg: 20px;
+	--spacing-xl: 24px;
+	--spacing-2xl: 32px;
+	--spacing-3xl: 40px;
+	--spacing-4xl: 48px;
+
+	/* radius */
+	--radius-sm: 4px; /* 표 썸네일 */
+	--radius-md: 6px; /* 버튼·입력칸 */
+	--radius-lg: 8px; /* 카드 */
+	--radius-full: 999px; /* 배지·필터 pill */
+
+	/* size */
+	--size-control-sm: 36px; /* 작은 버튼·필터 */
+	--size-control-md: 44px; /* 기본 버튼·입력칸 (최소 터치 영역) */
+	--size-control-lg: 52px; /* 결제 등 주요 CTA */
+	--size-sidebar: 240px; /* 관리자 사이드바 너비 */
+	--size-screen: 1280px; /* 와이어프레임 화면 너비 */
+
+	/* font */
+	--font-family-base: var(--font-noto-sans-kr), 'Noto Sans KR', system-ui, sans-serif;
+	--font-weight-regular: 400;
+	--font-weight-medium: 500;
+	--font-weight-bold: 700;
+
+	/* typography.heading */
+	--text-heading-h1: 28px; /* 상품 상세 상품명 */
+	--text-heading-h1--line-height: 1.3;
+	--text-heading-h1--font-weight: 700;
+	--text-heading-h2: 22px; /* 페이지 제목·금액 강조 */
+	--text-heading-h2--line-height: 1.3;
+	--text-heading-h2--font-weight: 700;
+	--text-heading-h3: 18px; /* 카드 제목·로고 */
+	--text-heading-h3--line-height: 1.4;
+	--text-heading-h3--font-weight: 700;
+	--text-heading-h4: 16px; /* 섹션 소제목 */
+	--text-heading-h4--line-height: 1.4;
+	--text-heading-h4--font-weight: 700;
+
+	/* typography.body */
+	--text-body-large: 15px; /* 긴 설명 본문 */
+	--text-body-large--line-height: 1.6;
+	--text-body-large--font-weight: 400;
+	--text-body-medium: 14px; /* 기본 본문·표 셀 */
+	--text-body-medium--line-height: 1.5;
+	--text-body-medium--font-weight: 400;
+	--text-body-medium-strong: 14px; /* 상품명·강조 본문 */
+	--text-body-medium-strong--line-height: 1.5;
+	--text-body-medium-strong--font-weight: 500;
+	--text-body-small: 13px; /* 보조 설명·메타 정보 */
+	--text-body-small--line-height: 1.5;
+	--text-body-small--font-weight: 400;
+
+	/* typography.caption */
+	--text-caption: 12px; /* 카테고리·도움말 */
+	--text-caption--line-height: 1.5;
+	--text-caption--font-weight: 400;
+
+	/* typography.label */
+	--text-label-badge: 12px; /* 상태 배지 */
+	--text-label-badge--line-height: 1.4;
+	--text-label-badge--font-weight: 500;
+	--text-label-button: 14px; /* 보조 버튼 */
+	--text-label-button--line-height: 1;
+	--text-label-button--font-weight: 500;
+	--text-label-button-strong: 14px; /* 주요 버튼 */
+	--text-label-button-strong--line-height: 1;
+	--text-label-button-strong--font-weight: 700;
+	--text-label-button-large: 16px; /* 결제 등 큰 CTA */
+	--text-label-button-large--line-height: 1;
+	--text-label-button-large--font-weight: 700;
+}

@@ -1,0 +1,2 @@
+# 커밋 메시지가 팀 규칙(type: 제목)을 따르는지 검사한다
+pnpm exec commitlint --edit "$1"

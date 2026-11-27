@@ -12,6 +12,12 @@ indent_size = 4
 tab_width = 4
 max_line_length = 120
 
+# frontend는 Prettier 설정(.prettierrc.json)과 값을 맞춘다
+[frontend/**]
+indent_size = 2
+tab_width = 2
+max_line_length = 100
+
 [*.java]
 indent_style = tab
 

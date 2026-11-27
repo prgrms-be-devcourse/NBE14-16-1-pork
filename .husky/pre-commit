@@ -1,0 +1,3 @@
+# 스테이징된 파일에 lint-staged를 실행한다
+# 파트별 작업은 루트 lint-staged.config.mjs에 정의한다
+pnpm exec lint-staged

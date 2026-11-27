@@ -1,0 +1,15 @@
+{
+	"name": "pork",
+	"private": true,
+	"description": "레포 공통 git 훅(husky, lint-staged, commitlint) 관리용. 앱 코드는 frontend, backend 디렉토리에 있다.",
+	"scripts": {
+		"prepare": "husky"
+	},
+	"packageManager": "pnpm@12.21.0",
+	"devDependencies": {
+		"@commitlint/cli": "^21.2.4",
+		"@commitlint/config-conventional": "^21.2.4",
+		"husky": "^9.1.7",
+		"lint-staged": "^17.6.2"
+	}
+}

@@ -1,0 +1,24 @@
+# OS·IDE·env·로그 파일은 루트 .gitignore에서 관리한다
+
+# dependencies
+/node_modules
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+*.pem
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
