@@ -1,0 +1,161 @@
+name: Jira Sync
+
+# GitHub 활동에 맞춰 Jira 이슈 상태를 바꾼다 (공식 GitHub for Jira 앱 대신 Jira REST API 사용)
+#   브랜치 첫 push (feat/PORK-12-...)  → 이슈를 '진행 중'으로
+#   PR 생성/수정                        → PR 제목 형식 검사 ([PORK-12] type: 요약)
+#   PR 생성                             → 이슈에 PR 링크 댓글
+#   PR 생성/수정                        → PR에 Jira 이슈 카드 댓글 (제목·상태·담당자·우선순위·기한)
+#   main에 머지                         → 이슈를 '완료'로 + 댓글
+#
+# 필요한 설정 (Settings → Secrets and variables → Actions)
+#   Secrets  : JIRA_BASE_URL (https://xxx.atlassian.net), JIRA_USER_EMAIL, JIRA_API_TOKEN
+#   Variables: JIRA_PROJECT_KEY (예: PORK)
+#              JIRA_IN_PROGRESS_STATUS, JIRA_DONE_STATUS (선택, 기본값 '진행 중', '완료')
+# 시크릿이 없으면 Jira 호출 단계는 경고만 남기고 건너뛴다. PR 제목 검사는 시크릿 없이 동작한다.
+
+on:
+  push:
+    branches-ignore: [main]
+  pull_request:
+    types: [opened, reopened, edited, synchronize, closed]
+
+permissions:
+  contents: read
+
+env:
+  PROJECT_KEY_PATTERN: ${{ vars.JIRA_PROJECT_KEY || '[A-Z][A-Z0-9]+' }}
+  IN_PROGRESS_STATUS: ${{ vars.JIRA_IN_PROGRESS_STATUS || '진행 중' }}
+  DONE_STATUS: ${{ vars.JIRA_DONE_STATUS || '완료' }}
+  JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+  JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+  JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+
+jobs:
+  # 새 브랜치가 처음 push되면 브랜치 이름의 이슈를 '진행 중'으로 옮긴다
+  start-issue:
+    if: github.event_name == 'push' && github.event.created
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: 브랜치 이름에서 이슈 키 추출
+        id: key
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          if [[ "$BRANCH" =~ ^[a-z]+/(${PROJECT_KEY_PATTERN}-[0-9]+)- ]]; then
+            echo "key=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
+            echo "이슈 키: ${BASH_REMATCH[1]}"
+          else
+            echo "::notice::브랜치 '${BRANCH}'에 Jira 이슈 키가 없어 건너뜁니다. 예) feat/PORK-12-be-order-create"
+          fi
+
+      - name: Jira 이슈를 진행 중으로 변경
+        if: steps.key.outputs.key != ''
+        env:
+          ISSUE_KEY: ${{ steps.key.outputs.key }}
+        run: |
+          if [[ -z "$JIRA_API_TOKEN" ]]; then
+            echo "::warning::Jira 시크릿이 설정되지 않아 상태 변경을 건너뜁니다."
+            exit 0
+          fi
+          bash .github/scripts/jira.sh transition "$ISSUE_KEY" "$IN_PROGRESS_STATUS"
+
+  # PR 제목 형식을 검사하고, PR이 열리면 Jira에 링크를 남긴다
+  # PR에는 Jira 이슈 카드(제목·상태·담당자 등) 댓글을 달고, PR이 수정되면 같은 댓글을 갱신한다
+  check-pr:
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: PR 제목 형식 검사
+        id: key
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          types='feat|fix|refactor|style|docs|test|chore|build'
+          if [[ "$PR_TITLE" =~ ^\[(${PROJECT_KEY_PATTERN}-[0-9]+)\]\ ?(${types}):\ .+ ]]; then
+            echo "key=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
+            echo "이슈 키: ${BASH_REMATCH[1]}"
+          else
+            echo "::error::PR 제목은 '[Jira 티켓] type: 작업 요약' 형식이어야 합니다. 예) [PORK-12] feat: 주문 생성 API (현재: ${PR_TITLE})"
+            exit 1
+          fi
+
+      - name: Jira에 PR 링크 댓글
+        if: github.event.action == 'opened' || github.event.action == 'reopened'
+        env:
+          ISSUE_KEY: ${{ steps.key.outputs.key }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          if [[ -z "$JIRA_API_TOKEN" ]]; then
+            echo "::warning::Jira 시크릿이 설정되지 않아 댓글 작성을 건너뜁니다."
+            exit 0
+          fi
+          bash .github/scripts/jira.sh comment "$ISSUE_KEY" "PR #${PR_NUMBER} 생성:" "$PR_URL"
+
+      - name: PR에 Jira 이슈 카드 댓글
+        if: github.event.action == 'opened' || github.event.action == 'reopened' || github.event.action == 'edited'
+        env:
+          ISSUE_KEY: ${{ steps.key.outputs.key }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if [[ -z "$JIRA_API_TOKEN" ]]; then
+            echo "::warning::Jira 시크릿이 설정되지 않아 이슈 카드를 건너뜁니다."
+            exit 0
+          fi
+          bash .github/scripts/jira.sh issue-card "$ISSUE_KEY" > card.md
+
+          # 이전에 단 카드 댓글이 있으면 갱신하고, 없으면 새로 단다
+          comment_id=$(gh api "repos/${GH_REPO}/issues/${PR_NUMBER}/comments" --paginate \
+            --jq '[.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("<!-- jira-issue-card -->")))][0].id // empty')
+          if [[ -n "$comment_id" ]]; then
+            gh api --method PATCH "repos/${GH_REPO}/issues/comments/${comment_id}" -F body=@card.md > /dev/null
+            echo "이슈 카드 댓글 갱신: ${comment_id}"
+          else
+            gh api --method POST "repos/${GH_REPO}/issues/${PR_NUMBER}/comments" -F body=@card.md > /dev/null
+            echo "이슈 카드 댓글 작성"
+          fi
+
+  # main에 머지되면 이슈를 '완료'로 옮긴다
+  complete-issue:
+    if: >-
+      github.event_name == 'pull_request'
+      && github.event.action == 'closed'
+      && github.event.pull_request.merged
+      && github.event.pull_request.base.ref == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: PR 제목에서 이슈 키 추출
+        id: key
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          if [[ "$PR_TITLE" =~ ^\[(${PROJECT_KEY_PATTERN}-[0-9]+)\] ]]; then
+            echo "key=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::PR 제목에 Jira 이슈 키가 없어 건너뜁니다."
+          fi
+
+      - name: Jira 이슈를 완료로 변경
+        if: steps.key.outputs.key != ''
+        env:
+          ISSUE_KEY: ${{ steps.key.outputs.key }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          if [[ -z "$JIRA_API_TOKEN" ]]; then
+            echo "::warning::Jira 시크릿이 설정되지 않아 상태 변경을 건너뜁니다."
+            exit 0
+          fi
+          bash .github/scripts/jira.sh transition "$ISSUE_KEY" "$DONE_STATUS"
+          bash .github/scripts/jira.sh comment "$ISSUE_KEY" "PR #${PR_NUMBER} main에 머지:" "$PR_URL"
