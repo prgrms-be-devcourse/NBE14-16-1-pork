@@ -21,6 +21,12 @@
 | Build | Gradle (Groovy DSL) |
 | IDE | IntelliJ IDEA |
 | Convention | [Naver Java Coding Convention](https://naver.github.io/hackday-conventions-java/) |
+| API Docs | springdoc-openapi (Swagger UI) |
+
+## ⚙️ 주요 설정
+
+- **시간대**: JVM, Jackson, Hibernate 모두 `Asia/Seoul`로 고정 (서버 OS 시간대와 무관)
+- **CORS**: `/api/**`에 대해 `application.yml`의 `cors.allowed-origins` 주소만 허용 (기본값: React 개발 서버 `localhost:3000`, `localhost:5173`)
 
 ## 🚀 실행 방법
 
@@ -31,6 +37,7 @@
 ```
 
 - API 서버: http://localhost:8080
+- API 문서 (Swagger): http://localhost:8080/swagger-ui.html
 - H2 콘솔: http://localhost:8080/h2-console
   - JDBC URL: `jdbc:h2:file:./data/gridsandcircles`
   - User: `sa` / Password: (비워둠)
