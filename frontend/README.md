@@ -33,6 +33,17 @@ pnpm dev       # http://localhost:3000
 
 shadcn/ui 컴포넌트 추가: `pnpm dlx shadcn@latest add <컴포넌트>`
 
+## 라우팅
+
+고객 페이지와 관리자 페이지를 라우트로 나눕니다.
+
+| 경로       | 위치                  | 레이아웃                             |
+| ---------- | --------------------- | ------------------------------------ |
+| `/`, ...   | `src/app/(customer)/` | 고객 헤더 (`(customer)/layout.tsx`)  |
+| `/admin/*` | `src/app/admin/`      | 관리자 사이드바 (`admin/layout.tsx`) |
+
+`(customer)`는 라우트 그룹이라 URL에 나타나지 않습니다. 고객 화면은 `(customer)` 아래에, 관리자 화면은 `admin` 아래에 폴더를 만들면 각 레이아웃이 자동으로 적용됩니다. `(customer)` 아래에 `admin` 폴더를 만들면 `/admin`과 경로가 겹쳐 오류가 나니 주의하세요.
+
 ## 디자인 토큰
 
 Figma에서 추출한 디자인 토큰은 [`src/styles/tokens.css`](src/styles/tokens.css)에 있습니다. `@theme`에 선언되어 있어 Tailwind 유틸리티로 바로 쓸 수 있습니다.
