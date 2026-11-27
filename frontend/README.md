@@ -16,8 +16,19 @@ Node.js 24, pnpm 12가 필요합니다.
 pnpm install   # 레포 루트에서 한 번: git 훅(husky) 등록
 cd frontend
 pnpm install
+cp .env.example .env.local   # 처음 한 번: 로컬 환경변수 준비
 pnpm dev       # http://localhost:3000
 ```
+
+## 환경변수
+
+| 이름                       | 설명                 | 로컬 기본값             |
+| -------------------------- | -------------------- | ----------------------- |
+| `NEXT_PUBLIC_API_BASE_URL` | 백엔드 API 서버 주소 | `http://localhost:8080` |
+
+- 예시는 `.env.example`에 있습니다. `.env.local`로 복사해서 쓰고, `.env.local`은 커밋하지 않습니다.
+- 코드에서는 `process.env`를 직접 읽지 말고 [`src/lib/env.ts`](src/lib/env.ts)의 상수(`API_BASE_URL`)를 import 해서 씁니다.
+- 환경변수를 추가하면 `.env.example`, `src/lib/env.ts`, 이 표를 함께 고칩니다.
 
 ## 스크립트
 
